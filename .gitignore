@@ -1,0 +1,6 @@
+.DS_Store
+cache/
+data/*.graphml
+src/__pycache__/
+notes/.Rhistory
+notes/In_Depth.md

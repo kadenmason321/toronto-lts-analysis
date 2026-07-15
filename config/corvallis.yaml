@@ -1,0 +1,73 @@
+city_name: "Corvallis"
+country: "USA"
+
+query_place: "Corvallis, Oregon, USA"
+
+# THIS is the field that actually changes behavior vs Toronto/Vancouver —
+# US cities tag maxspeed in mph (often as a literal string like "25 mph").
+# Our code strips non-numeric characters then multiplies by MPH_TO_KMH
+# when this flag is set, so raw tag values get converted correctly.
+speed_unit: "mph"
+
+tags:
+  mixed_traffic_highways:
+    - residential
+    - tertiary
+    - secondary
+    - primary
+    - unclassified
+    - living_street
+
+  exclude_highways:
+    - motorway
+    - motorway_link
+    - trunk
+    - trunk_link
+
+  cycleway_values:
+    track: "protected"
+    opposite_track: "protected"
+    lane: "bike_lane"
+    opposite_lane: "bike_lane"
+    shared_lane: "mixed"
+    share_busway: "mixed"
+    no: "mixed"
+
+  cycleway_side_keys:
+    - cycleway
+    - cycleway:left
+    - cycleway:right
+    - cycleway:both
+
+  parking_keys:
+    - parking:lane:left
+    - parking:lane:right
+    - parking:lane:both
+
+  parking_present_values:
+    - parallel
+    - diagonal
+    - perpendicular
+
+defaults:
+  # IMPORTANT GOTCHA, worth remembering: even though speed_unit is "mph"
+  # above (that controls how we interpret RAW OSM TAG values), these
+  # default fallback values are consumed directly as km/h by the scoring
+  # code — the fallback path doesn't re-run the mph conversion. So these
+  # numbers are deliberately already-converted km/h equivalents of typical
+  # US speed limits, not raw mph numbers. 25 mph residential -> ~40 km/h.
+  speed_by_highway:
+    residential: 40   # ~25 mph
+    living_street: 24  # ~15 mph
+    tertiary: 56       # ~35 mph
+    secondary: 56       # ~35 mph
+    primary: 72         # ~45 mph
+    unclassified: 48    # ~30 mph
+
+  lanes_by_highway:
+    residential: 2
+    living_street: 1
+    tertiary: 2
+    secondary: 4
+    primary: 4
+    unclassified: 2

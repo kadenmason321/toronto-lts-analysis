@@ -1,0 +1,91 @@
+# =============================================================================
+# CITY CONFIG: Toronto
+# =============================================================================
+# This file is the "translation layer" between raw OSM tags and the LTS rule
+# engine. The rule engine (src/lts_rules.py) never hardcodes anything
+# city-specific — it just asks this config: "what's the speed unit here?"
+# "what tag means 'has bike lane'?" etc.
+#
+# To port to Vancouver/Corvallis/NYC later, you copy this file, rename it,
+# and edit the values — you do NOT touch the rule engine code.
+# =============================================================================
+
+city_name: "Toronto"
+country: "Canada"
+
+# Bounding box or place name for OSMnx to query.
+# Start SMALL for testing (a neighborhood), widen once the pipeline works.
+query_place:  "Toronto, Ontario, Canada"
+
+# ---------------------------------------------------------------------------
+# UNITS
+# ---------------------------------------------------------------------------
+# Canada tags maxspeed in km/h (often with no explicit unit suffix in OSM,
+# just a bare number, since km/h is the CA/EU default). US cities (Corvallis,
+# NYC) tag in mph, sometimes with an explicit "25 mph" string.
+# The rule engine always works internally in km/h — this tells it how to
+# interpret this city's raw values.
+speed_unit: "kmh"
+
+# ---------------------------------------------------------------------------
+# OSM TAG MAPPING
+# ---------------------------------------------------------------------------
+tags:
+  mixed_traffic_highways:
+    - residential
+    - tertiary
+    - secondary
+    - primary
+    - unclassified
+    - living_street
+
+  exclude_highways:
+    - motorway
+    - motorway_link
+    - trunk        # e.g. Gardiner Expressway — cyclists can't legally ride it
+    - trunk_link
+
+  cycleway_values:
+    track: "protected"
+    opposite_track: "protected"
+    lane: "bike_lane"
+    opposite_lane: "bike_lane"
+    shared_lane: "mixed"
+    share_busway: "mixed"
+    no: "mixed"
+
+  cycleway_side_keys:
+    - cycleway
+    - cycleway:left
+    - cycleway:right
+    - cycleway:both
+
+  parking_keys:
+    - parking:lane:left
+    - parking:lane:right
+    - parking:lane:both
+
+  parking_present_values:
+    - parallel
+    - diagonal
+    - perpendicular
+
+# ---------------------------------------------------------------------------
+# DEFAULTS (used when a way is missing a tag — very common in OSM)
+# ---------------------------------------------------------------------------
+defaults:
+  speed_by_highway:
+    residential: 30
+    living_street: 20
+    tertiary: 40
+    secondary: 50
+    primary: 50
+    unclassified: 40
+
+  lanes_by_highway:
+    residential: 2
+    living_street: 1
+    tertiary: 2
+    secondary: 4
+    primary: 4
+    unclassified: 2
