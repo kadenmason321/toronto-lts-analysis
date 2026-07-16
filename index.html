@@ -29,6 +29,14 @@
     font-weight: 600; cursor: pointer;
   }
 
+  #close-controls-btn {
+    display: none;
+    position: fixed; top: 15px; right: 15px; z-index: 1002;
+    background: #1a1a1a; color: white; border: none;
+    padding: 10px 16px; border-radius: 20px; font-size: 13px;
+    font-weight: 600; cursor: pointer;
+  }
+
   /* ---- Narrow-screen (mobile) layout ---- */
   @media (max-width: 640px) {
     #title-panel {
@@ -36,11 +44,9 @@
       font-size: 12px; padding: 8px 12px;
     }
     #title-panel b { font-size: 14px; }
-    #title-panel span { display: none; } /* hide the longer subtitle, too cramped */
+    #title-panel span { display: none; }
 
-    #jump-panel {
-      display: none; /* merged into the controls toggle flow instead */
-    }
+    #jump-panel { display: none; }
 
     #controls-toggle-btn { display: block; }
 
@@ -51,14 +57,9 @@
       display: none;
       padding: 60px 15px 15px 15px;
       overflow-y: auto;
+      z-index: 1001;
     }
     #controls-panel.open { display: block; }
-    #controls-panel .close-controls-btn {
-      position: fixed; top: 15px; right: 15px;
-      background: #1a1a1a; color: white; border: none;
-      padding: 10px 16px; border-radius: 20px; font-size: 13px;
-      font-weight: 600; cursor: pointer;
-    }
     #controls-panel select {
       width: 100%; padding: 10px; font-size: 15px; margin-bottom: 16px;
     }
@@ -195,6 +196,7 @@
 <div id="map"></div>
 
 <button id="controls-toggle-btn">Layers &amp; Cities</button>
+<button id="close-controls-btn">Close</button>
 
 <div id="title-panel" class="panel" style="position: fixed; top: 15px; left: 60px; z-index: 1000;">
   <b>Level of Traffic Stress -- Multi-City Explorer</b><br>
@@ -206,7 +208,6 @@
 </div>
 
 <div id="controls-panel" class="panel" style="position: fixed; top: 100px; right: 15px; z-index: 1000; max-height: 70vh; overflow-y: auto; max-width: 240px;">
-  <button class="close-controls-btn" id="close-controls-btn" style="display: none;">Close</button>
   <select id="city-jump-select-mobile" style="display: none;"></select>
   <div id="controls-list"></div>
 </div>
@@ -371,20 +372,24 @@ document.getElementById('to-map-btn').addEventListener('click', () => {
   document.getElementById('explainer').classList.add('fade-out');
 });
 
-// Mobile: controls panel opens as a full-screen sheet via this toggle
-// button, and the mobile-only dropdown + close button become visible.
 const controlsToggleBtn = document.getElementById('controls-toggle-btn');
 const controlsPanel = document.getElementById('controls-panel');
 const closeControlsBtn = document.getElementById('close-controls-btn');
 const cityJumpMobile = document.getElementById('city-jump-select-mobile');
+const legendPanel = document.getElementById('legend-panel');
 
 controlsToggleBtn.addEventListener('click', () => {
   controlsPanel.classList.add('open');
+  controlsToggleBtn.style.display = 'none';
   closeControlsBtn.style.display = 'block';
   cityJumpMobile.style.display = 'block';
+  legendPanel.style.display = 'none';
 });
 closeControlsBtn.addEventListener('click', () => {
   controlsPanel.classList.remove('open');
+  controlsToggleBtn.style.display = 'block';
+  closeControlsBtn.style.display = 'none';
+  legendPanel.style.display = 'block';
 });
 
 </script>
