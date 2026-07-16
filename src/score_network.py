@@ -18,20 +18,12 @@ MPH_TO_KMH = 1.60934
 
 
 def _first(val):
-    """
-    OSMnx sometimes stores a tag as a list (when multiple original OSM ways
-    got merged into one simplified edge, e.g. a street that changes speed
-    limit slightly midblock). We take the worst case for scoring purposes
-    where relevant (handled by caller), otherwise just the first value.
-    """
     if isinstance(val, list):
         return val[0] if val else None
     return val
 
 
 def _numeric_list(val):
-    """Extract numeric values from a tag that might be a single value,
-    a list, or a string like '50 km/h'. Returns a list of floats."""
     if val is None:
         return []
     if not isinstance(val, list):
@@ -41,7 +33,6 @@ def _numeric_list(val):
         if v is None:
             continue
         try:
-            # strip non-numeric characters (e.g. "50 km/h" -> "50")
             digits = "".join(c for c in str(v) if c.isdigit() or c == ".")
             if digits:
                 nums.append(float(digits))
@@ -51,22 +42,18 @@ def _numeric_list(val):
 
 
 def get_speed_kmh(row, cfg):
-    """Get worst-case (highest) speed for this edge, converted to km/h,
-    falling back to the config default for this highway type if missing."""
     speeds = _numeric_list(row.get("maxspeed"))
     if speeds:
         raw = max(speeds)
         if cfg["speed_unit"] == "mph":
             return raw * MPH_TO_KMH
         return raw
-    # fallback to default
     hw = _first(row.get("highway"))
     defaults = cfg["defaults"]["speed_by_highway"]
-    return defaults.get(hw, 40)  # 40 km/h = generic fallback if highway type unlisted
+    return defaults.get(hw, 40)
 
 
 def get_lanes(row, cfg):
-    """Worst-case (highest) lane count, falling back to config default."""
     lanes = _numeric_list(row.get("lanes"))
     if lanes:
         return int(max(lanes))
@@ -75,10 +62,22 @@ def get_lanes(row, cfg):
     return defaults.get(hw, 2)
 
 
+def is_standalone_cycleway(row):
+    """Checks for the _standalone_cycleway marker explicitly, rather
+    than relying on Python truthiness -- pandas fills missing values
+    in this column with NaN for rows that never had the attribute set,
+    and NaN is TRUTHY in Python (bool(float('nan')) == True), which
+    would otherwise incorrectly mark every edge as a standalone
+    cycleway. GraphML save/load can also turn True into the string
+    "True", so check for both forms explicitly."""
+    val = row.get("_standalone_cycleway")
+    return val is True or val == "True" or val == "true"
+
+
 def get_facility_type(row, cfg):
-    """Check cycleway tags (in priority order from config) and map the raw
-    OSM value to one of 'protected' / 'bike_lane' / 'mixed' via the config's
-    cycleway_values mapping."""
+    if is_standalone_cycleway(row):
+        return "protected"
+
     tag_keys = cfg["tags"]["cycleway_side_keys"]
     value_map = cfg["tags"]["cycleway_values"]
     for key in tag_keys:
@@ -86,7 +85,7 @@ def get_facility_type(row, cfg):
         raw_val = _first(raw_val)
         if raw_val and raw_val in value_map:
             return value_map[raw_val]
-    return "mixed"  # no cycleway tag found -> assume mixed traffic
+    return "mixed"
 
 
 def get_has_parking(row, cfg):

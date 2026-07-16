@@ -1,0 +1,75 @@
+city_name: "Amsterdam"
+country: "Netherlands"
+
+query_place: "Amsterdam, Netherlands"
+
+speed_unit: "kmh"
+
+include_standalone_cycleways: true
+
+tags:
+  mixed_traffic_highways:
+    - residential
+    - tertiary
+    - secondary
+    - primary
+    - unclassified
+    - living_street
+
+  exclude_highways:
+    - motorway
+    - motorway_link
+    - trunk
+    - trunk_link
+
+  # NOTE: Amsterdam/Dutch OSM tagging is expected to have much richer
+  # cycleway tagging than Toronto/Vancouver/Corvallis, since the
+  # Netherlands has unusually mature cycling infrastructure mapping.
+  # This is the whole point of adding this city -- to stress-test
+  # whether the config's tag-mapping assumptions hold up against a
+  # genuinely different tagging culture, not just different units.
+  cycleway_values:
+    track: "protected"
+    opposite_track: "protected"
+    lane: "bike_lane"
+    opposite_lane: "bike_lane"
+    shared_lane: "mixed"
+    share_busway: "mixed"
+    no: "mixed"
+
+  cycleway_side_keys:
+    - cycleway
+    - cycleway:left
+    - cycleway:right
+    - cycleway:both
+
+  parking_keys:
+    - parking:lane:left
+    - parking:lane:right
+    - parking:lane:both
+
+  parking_present_values:
+    - parallel
+    - diagonal
+    - perpendicular
+
+defaults:
+  # Dutch residential zones are very commonly 30 km/h ("30 km zones"
+  # are extremely widespread post-traffic-calming reforms). Assumption
+  # carried over from Toronto's pattern, NOT independently verified
+  # against Dutch national defaults -- same honest caveat as before.
+  speed_by_highway:
+    residential: 30
+    living_street: 15
+    tertiary: 50
+    secondary: 50
+    primary: 50
+    unclassified: 30
+
+  lanes_by_highway:
+    residential: 2
+    living_street: 1
+    tertiary: 2
+    secondary: 2
+    primary: 2
+    unclassified: 2

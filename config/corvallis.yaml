@@ -9,6 +9,7 @@ query_place: "Corvallis, Oregon, USA"
 # when this flag is set, so raw tag values get converted correctly.
 speed_unit: "mph"
 
+
 tags:
   mixed_traffic_highways:
     - residential
@@ -71,3 +72,4 @@ defaults:
     secondary: 4
     primary: 4
     unclassified: 2
+include_standalone_cycleways: true

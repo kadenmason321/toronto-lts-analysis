@@ -1,10 +1,10 @@
 city_name: "Vancouver"
 country: "Canada"
 
-# Small test area first — a few blocks, not the whole city
-query_place: "Mount Pleasant, Vancouver, British Columbia, Canada"
+query_place: "Vancouver, British Columbia, Canada"
 
 speed_unit: "kmh"
+
 
 tags:
   mixed_traffic_highways:
@@ -47,11 +47,6 @@ tags:
     - perpendicular
 
 defaults:
-  # Vancouver's default residential speed limit is 30 km/h (matches most
-  # Canadian cities post-2021ish local street reforms), but note: this is
-  # an assumption carried over from Toronto's config, not independently
-  # verified for Vancouver. Worth flagging as a limitation, or confirming
-  # against Vancouver's actual bylaw if you want to be rigorous about it.
   speed_by_highway:
     residential: 30
     living_street: 20
@@ -67,3 +62,4 @@ defaults:
     secondary: 4
     primary: 4
     unclassified: 2
+include_standalone_cycleways: true

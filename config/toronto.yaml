@@ -27,6 +27,7 @@ query_place:  "Toronto, Ontario, Canada"
 # interpret this city's raw values.
 speed_unit: "kmh"
 
+
 # ---------------------------------------------------------------------------
 # OSM TAG MAPPING
 # ---------------------------------------------------------------------------
@@ -89,3 +90,4 @@ defaults:
     secondary: 4
     primary: 4
     unclassified: 2
+include_standalone_cycleways: true
