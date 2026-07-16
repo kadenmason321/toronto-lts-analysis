@@ -577,3 +577,167 @@ clearest reading order.
 - GitHub Pages deployment of the interactive map has not been done
 - The interactive map has not yet been re-pushed to GitHub with
   tonight's updated data
+
+## RESOLVED: node-snapping investigation from earlier -- likely a real trail gap, not a data bug
+Followed up on the open question above. Located the exact spot: the
+Humber River Recreational Trail meets Old Dundas Street near the
+historic Lambton House. Widened the search to 500m around this
+location (initial 150m search only caught 3 nodes -- too few to be a
+real test) and re-ran the near-miss node check against 66 nodes /
+2,145 pairs. Result: NO unsnapped near-miss nodes found.
+
+Independently, a web search surfaced a Toronto cycling blog
+documenting a REAL, known discontinuity at this exact location: the
+Humber River Recreational Trail does not continue directly through
+here -- cyclists have to leave the trail, briefly ride on Lundy Avenue
+and Old Dundas Street, before the trail picks up again. This is a
+genuine, real-world "missing link" in the trail system itself, not a
+data artifact.
+
+**Conclusion:** the visual "touching" of red and green fragments on
+the mobile map most likely reflects this REAL trail discontinuity
+correctly, not a graph bug. Two genuinely separate pieces of
+infrastructure (trail segment, road segment) can be geographically
+adjacent on screen while remaining legitimately disconnected in the
+network -- which is exactly what a real "missing link" looks like when
+rendered. Marking this investigation closed. Does not change the
+core fragmentation finding or its magnitude; if anything, this
+specific example is a nice, small, real-world illustration of exactly
+the kind of gap the whole connectivity analysis is designed to
+surface.
+
+## Finding: five-city connectivity comparison complete
+Ran the same fragmentation/connectivity analysis (previously done for
+Toronto and Amsterdam only) on Vancouver, Corvallis, and Seattle,
+completing the comparison across all five cities.
+
+| City | Largest fragment (% of low-stress network) | Total components |
+|---|---|---|
+| Toronto | 14.4% | 1,438 |
+| Seattle | 34.1% | 735 |
+| Corvallis | 41.8% | 172 |
+| Vancouver | 83.5% | 325 |
+| Amsterdam | 90.0% | 617 |
+
+Two things worth noting:
+
+1. Real, ordered spread across cities, not a binary "fragmented vs.
+   not." Toronto is a clear outlier at the low end; Vancouver sits
+   much closer to Amsterdam's near-unified end despite being a North
+   American city, ruling out "this is just a North American thing" as
+   a full explanation.
+
+2. Seattle's structure is qualitatively different from the others,
+   not just quantitatively lower. It has TWO large, comparably-sized
+   fragments (6,825 and 4,948 nodes) rather than one dominant fragment
+   with a steep drop-off -- unlike Toronto, Corvallis, and Vancouver,
+   which all show a single clear leader. This suggests Seattle's
+   low-stress network may be split into two genuinely separate major
+   sub-networks (plausibly divided by a geographic feature like a lake
+   or hill terrain) rather than one core network with scattered small
+   fragments around it. Worth investigating which two areas these
+   correspond to as a specific example, similar to the Toronto missing-
+   link case studies.
+
+## Checked and cleared: highway=path blind spot hypothesis (Hudson River Greenway)
+Before fully trusting NYC's facility-coverage numbers, tested a
+hypothesis: does cycling infrastructure sometimes get tagged as
+highway=path + bicycle=designated instead of highway=cycleway? If so,
+this would be a real, uncaught blind spot -- our standalone-cycleway
+merge only looks for highway=cycleway specifically.
+
+Tested against a small bounding box covering the Hudson River
+Greenway near Chelsea/Hell's Kitchen, Manhattan -- a well-known,
+heavily-used dedicated bike/ped corridor, chosen as the highest-risk
+test case. Result: 36 highway=cycleway ways found (correctly captured
+by the existing fix), ZERO highway=path ways found at all.
+
+**Conclusion:** the highway=path blind spot hypothesis does NOT hold
+in this specific, high-profile corridor. This doesn't prove the
+pattern never occurs anywhere in NYC or elsewhere, but it rules out
+the single highest-risk location for it. Treating this as a checked,
+cleared hypothesis rather than an open question -- the appropriate
+level of confidence given a real, specific, well-chosen test, not
+blanket certainty.
+
+## Finding: NYC is the MOST fragmented city in the six-city comparison
+Completed NYC's connectivity analysis. Result: 3,118 total components,
+largest fragment only 4,038 nodes (11.1% of the low-stress network).
+
+Full six-city comparison, complete:
+
+| City | Largest fragment (%) | Total components |
+|---|---|---|
+| NYC | 11.1% | 3,118 |
+| Toronto | 14.4% | 1,438 |
+| Seattle | 34.1% | 735 |
+| Corvallis | 41.8% | 172 |
+| Vancouver | 83.5% | 325 |
+| Amsterdam | 90.0% | 617 |
+
+**This is a genuinely counterintuitive, newsworthy result.** NYC has
+invested heavily and visibly in cycling infrastructure over roughly
+two decades and has a strong public reputation as a leading US
+cycling city -- yet it comes out as the MOST fragmented network
+tested, not the least. Worse than Toronto by both measures (smaller
+largest fragment AND more total pieces).
+
+Plausible explanation, not yet verified: NYC's infrastructure
+investment may be real but concentrated in specific corridors
+(protected lanes on major avenues, greenways along the rivers) that
+don't necessarily connect to each other or to the broader residential
+grid -- consistent with the low overall LTS 1 share found earlier
+(7.8%, lowest of all six cities) and the low edge-retention rate in
+the low-stress subgraph (47.9%, also lowest of all six cities).
+
+This reinforces the project's core methodological point: infrastructure
+QUANTITY and infrastructure CONNECTIVITY are different things, and a
+city's reputation for having "a lot of bike lanes" doesn't guarantee a
+connected low-stress network. NYC is now the strongest illustration of
+this distinction in the whole dataset -- a stronger example than the
+original Toronto/Amsterdam contrast, since NYC's reputation runs
+directly counter to what the data shows.
+
+## IMPORTANT CAVEAT to NYC fragmentation finding: one-way doubling has a MUCH larger effect here than in Toronto
+Ran the same one-way-doubling artifact test used to validate Toronto's
+fragmentation finding, against NYC. Unlike Toronto (where disabling
+doubling barely changed anything: 1,169->1,139 components, 16.3%->17.0%
+largest fragment), NYC showed a dramatic swing:
+
+- WITH doubling (current/reported number): 3,118 components, largest
+  fragment 11.1%
+- WITHOUT doubling: 2,291 components, largest fragment 27.3% -- more
+  than DOUBLE the largest-fragment size, and 25%+ fewer total
+  components
+
+Cause: NYC has 41,618 one-way edges (a much larger share of the
+network than Toronto's one-way streets), and 22,907 of them (55%)
+would score low-stress WITHOUT the doubling rule applied. NYC's
+famous one-way avenue grid means this single rule is doing far more
+work here than in any other city tested so far.
+
+**This does NOT mean the "NYC is the most fragmented city" finding is
+wrong** -- the doubling rule may be correctly capturing genuine stress
+on NYC's busy one-way avenues (which are often wide, fast, and
+multi-lane, functioning very differently from a typical calm one-way
+residential street). But unlike Toronto, where this specific concern
+was tested and CLEARED, NYC's result cannot currently be presented
+with the same confidence. The 11.1% / 3,118-component figure is
+real output of the current model, but it is now KNOWN to be sensitive
+to a specific, debatable methodological choice in a way Toronto's
+figure is not.
+
+**Honest framing for any write-up:** present NYC's fragmentation
+finding with this caveat explicitly stated, or hold off on presenting
+NYC as "the most fragmented" as a headline claim until this is
+resolved. A defensible middle path: report a RANGE (11.1%-27.3%
+largest fragment, depending on treatment of one-way streets) rather
+than a single number, until there's a principled reason to prefer one
+treatment over the other specifically for NYC's avenue grid.
+
+**Not yet resolved. Worth revisiting**: is there real-world evidence
+(rider reports, DOT data) about whether NYC's one-way avenues actually
+feel comparable in stress to a 4+ lane two-way road, or whether the
+doubling rule overstates it for this specific case? This is exactly
+the kind of city-specific validation the LTS literature itself
+flags as a real limitation of blanket rules.
